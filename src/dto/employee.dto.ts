@@ -6,7 +6,7 @@ import {
   ValidateNested,
 } from "class-validator";
 import { Type } from "class-transformer";
-import { CreateAddressDto } from "./address.dto";
+import { CreateAddressDto, UpdateAddressDto } from "./address.dto";
 import "reflect-metadata";
 
 export class CreateEmployeeDto {
@@ -27,4 +27,24 @@ export class CreateEmployeeDto {
   @ValidateNested({ each: true })
   @Type(() => CreateAddressDto)
   address: CreateAddressDto;
+}
+
+export class UpdateEmployeeDto {
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsEmail()
+  email: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  age: number;
+
+  @IsNotEmpty()
+  @ValidateNested({ each: true })
+  @Type(() => UpdateAddressDto)
+  address: UpdateAddressDto;
 }

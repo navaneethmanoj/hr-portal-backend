@@ -2,9 +2,9 @@ import { plainToInstance } from "class-transformer";
 import HttpException from "../exceptions/http.exception";
 import EmployeeService from "../service/employee.service";
 import express from "express";
-import { CreateEmployeeDto } from "../dto/employee.dto";
-import { error } from "console";
+import { CreateEmployeeDto, UpdateEmployeeDto } from "../dto/employee.dto";
 import { validate } from "class-validator";
+import ValidationException from "../exceptions/validation.exception";
 
 class EmployeeController {
   public router: express.Router;
@@ -20,11 +20,17 @@ class EmployeeController {
   }
   public getAllEmployees = async (
     req: express.Request,
-    res: express.Response
+    res: express.Response,
+    next: express.NextFunction
   ) => {
-    const employees = await this.employeeService.getAllEmployees();
-    res.status(200).send(employees);
+    try {
+      const employees = await this.employeeService.getAllEmployees();
+      res.status(200).send(employees);
+    } catch (err) {
+      next(err);
+    }
   };
+
   public getEmployeeById = async (
     req: express.Request,
     res: express.Response,
@@ -55,8 +61,7 @@ class EmployeeController {
       const employeeDto = plainToInstance(CreateEmployeeDto, req.body);
       const errors = await validate(employeeDto);
       if (errors.length) {
-        console.log(errors[0].children);
-        throw new HttpException(400, JSON.stringify(errors));
+        throw new ValidationException(400, "Validation Failed", errors);
       }
       const newEmployee = await this.employeeService.createEmployee(
         employeeDto.name,
@@ -71,26 +76,41 @@ class EmployeeController {
   };
   public updateEmployee = async (
     req: express.Request,
-    res: express.Response
+    res: express.Response,
+    next: express.NextFunction
   ) => {
-    const { name, email, age, address } = req.body;
-    const id = Number(req.params.id);
-    const updatedEmployee = await this.employeeService.updateEmployee(
-      id,
-      name,
-      email,
-      age,
-      address
-    );
-
-    res.status(200).send(updatedEmployee);
+    try {
+      const employeeDto = plainToInstance(UpdateEmployeeDto, req.body);
+      const errors = await validate(employeeDto);
+      if (errors.length) {
+        throw new ValidationException(400, "Validation Failed", errors);
+      }
+      // const { name, email, age, address } = req.body;
+      const id = Number(req.params.id);
+      const updatedEmployee = await this.employeeService.updateEmployee(
+        id,
+        employeeDto.name,
+        employeeDto.email,
+        employeeDto.age,
+        employeeDto.address
+      );
+      res.status(200).send(updatedEmployee);
+    } catch (err) {
+      next(err);
+    }
   };
+
   public deleteEmployee = async (
     req: express.Request,
-    res: express.Response
+    res: express.Response,
+    next: express.NextFunction
   ) => {
-    await this.employeeService.deleteEmployee(Number(req.params.id));
-    res.status(204).send("");
+    try {
+      await this.employeeService.deleteEmployee(Number(req.params.id));
+      res.status(204).send("");
+    } catch (err) {
+      next(err);
+    }
   };
 }
 
