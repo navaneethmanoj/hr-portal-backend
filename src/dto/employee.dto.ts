@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -8,6 +9,7 @@ import {
 import { Type } from "class-transformer";
 import { CreateAddressDto, UpdateAddressDto } from "./address.dto";
 import "reflect-metadata";
+import { Role } from "../utils/role.enum";
 
 export class CreateEmployeeDto {
   @IsNotEmpty()
@@ -18,6 +20,13 @@ export class CreateEmployeeDto {
   @IsString()
   @IsEmail()
   email: string;
+
+  @IsString()
+  password: string;
+
+  @IsNotEmpty()
+  @IsEnum(Role)
+  role: Role;
 
   @IsNotEmpty()
   @IsNumber()

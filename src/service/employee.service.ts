@@ -1,9 +1,38 @@
+import bcrypt from "bcrypt";
+import jsonwebtoken from "jsonwebtoken";
+
 import Address from "../entity/address.entity";
 import Employee from "../entity/employee.entity";
 import EmployeeRepository from "../repository/employee.repository";
+import { Role } from "../utils/role.enum";
+import EntityNotFoundException from "../exceptions/entity-not-found.exception";
+import { jwtPayload } from "../utils/jwtPayload";
+import { JWT_SECRET, JWT_VALIDITY } from "../utils/constants";
+import IncorrectPasswordException from "../exceptions/incorrect-password.exception";
+import { ErrorCodes } from "../utils/error.code";
 
 class EmployeeService {
   constructor(private employeeRepository: EmployeeRepository) {}
+  loginEmployee = async (email: string, password: string) => {
+    const employee = await this.employeeRepository.findOneBy({ email });
+    if (!employee) {
+      throw new EntityNotFoundException(ErrorCodes.EMPLOYEE_WITH_ID_NOT_FOUND);
+    }
+    const result = await bcrypt.compare(password, employee.password);
+    if (!result) {
+      throw new IncorrectPasswordException(ErrorCodes.UNAUTHORIZED);
+    }
+
+    const payload: jwtPayload = {
+      name: employee.name,
+      email: employee.email,
+      role: employee.role,
+    };
+    const token = jsonwebtoken.sign(payload, JWT_SECRET, {
+      expiresIn: JWT_VALIDITY,
+    });
+    return { token };
+  };
   getAllEmployees = async (): Promise<Employee[]> => {
     return this.employeeRepository.find();
   };
@@ -14,12 +43,16 @@ class EmployeeService {
     name: string,
     email: string,
     age: number,
-    address: any
+    address: any,
+    password: string,
+    role: Role
   ): Promise<Employee> => {
     const newEmployee = new Employee();
     newEmployee.name = name;
     newEmployee.email = email;
     newEmployee.age = age;
+    newEmployee.role = role;
+    newEmployee.password = password ? await bcrypt.hash(password, 10) : "";
 
     const newAddress = new Address();
     newAddress.line1 = address.line1;

@@ -5,6 +5,11 @@ import express from "express";
 import { CreateEmployeeDto, UpdateEmployeeDto } from "../dto/employee.dto";
 import { validate } from "class-validator";
 import ValidationException from "../exceptions/validation.exception";
+import authorize from "../middleware/authorize.middleware";
+import { RequestWithUser } from "../utils/RequestWithUser";
+import IncorrectPasswordException from "../exceptions/incorrect-password.exception";
+import { Role } from "../utils/role.enum";
+import { ErrorCodes } from "../utils/error.code";
 
 class EmployeeController {
   public router: express.Router;
@@ -12,12 +17,26 @@ class EmployeeController {
   constructor(private employeeService: EmployeeService) {
     this.router = express.Router();
 
+    this.router.post("/login", this.loginEmployee);
     this.router.get("/", this.getAllEmployees);
     this.router.get("/:id", this.getEmployeeById);
-    this.router.post("/", this.createEmployee);
+    this.router.post("/", authorize, this.createEmployee);
     this.router.put("/:id", this.updateEmployee);
-    this.router.delete("/:id", this.deleteEmployee);
+    this.router.delete("/:id", authorize, this.deleteEmployee);
   }
+  public loginEmployee = async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      const { email, password } = req.body;
+      const token = await this.employeeService.loginEmployee(email, password);
+      res.status(200).send({ data: token });
+    } catch (err) {
+      next(err);
+    }
+  };
   public getAllEmployees = async (
     req: express.Request,
     res: express.Response,
@@ -53,11 +72,15 @@ class EmployeeController {
     }
   };
   public createEmployee = async (
-    req: express.Request,
+    req: RequestWithUser,
     res: express.Response,
     next: express.NextFunction
   ) => {
     try {
+      const role = req.role;
+      if (role !== Role.HR) {
+        throw new HttpException(403, "Not authorized to perform this action");
+      }
       const employeeDto = plainToInstance(CreateEmployeeDto, req.body);
       const errors = await validate(employeeDto);
       if (errors.length) {
@@ -67,7 +90,9 @@ class EmployeeController {
         employeeDto.name,
         employeeDto.email,
         employeeDto.age,
-        employeeDto.address
+        employeeDto.address,
+        employeeDto.password,
+        employeeDto.role
       );
       res.status(201).send(newEmployee);
     } catch (err) {
@@ -85,7 +110,6 @@ class EmployeeController {
       if (errors.length) {
         throw new ValidationException(400, "Validation Failed", errors);
       }
-      // const { name, email, age, address } = req.body;
       const id = Number(req.params.id);
       const updatedEmployee = await this.employeeService.updateEmployee(
         id,
@@ -101,11 +125,15 @@ class EmployeeController {
   };
 
   public deleteEmployee = async (
-    req: express.Request,
+    req: RequestWithUser,
     res: express.Response,
     next: express.NextFunction
   ) => {
     try {
+      const role = req.role;
+      if (role !== Role.HR) {
+        throw new IncorrectPasswordException(ErrorCodes.UNAUTHORIZED);
+      }
       await this.employeeService.deleteEmployee(Number(req.params.id));
       res.status(204).send("");
     } catch (err) {
