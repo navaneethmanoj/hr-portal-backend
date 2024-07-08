@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
 import AbstractEntity from "./abstract-entity";
 import Address from "./address.entity";
 import { Role } from "../utils/role.enum";
@@ -27,7 +27,10 @@ class Employee extends AbstractEntity {
   })
   address: Address;
 
-  @ManyToOne(() => Department, (department) => department.employees)
+  @ManyToOne(() => Department, (department) => department.employees, {
+    onUpdate: "CASCADE",
+  })
+  @JoinColumn({ name: "dept_name", referencedColumnName: "name" })
   department: Department;
 }
 

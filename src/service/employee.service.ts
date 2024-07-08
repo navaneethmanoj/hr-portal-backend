@@ -14,10 +14,7 @@ import { ErrorCodes } from "../utils/error.code";
 import Department from "../entity/department.entity";
 
 class EmployeeService {
-  constructor(
-    private employeeRepository: EmployeeRepository,
-    private departmentRepository: DepartmentRepository
-  ) {}
+  constructor(private employeeRepository: EmployeeRepository) {}
   loginEmployee = async (email: string, password: string) => {
     const employee = await this.employeeRepository.findOneBy({ email });
     if (!employee) {
@@ -53,11 +50,6 @@ class EmployeeService {
     role: Role,
     departmentName: string
   ): Promise<Employee> => {
-    // const department = await this.departmentRepository.findOneBy({
-    //   name: departmentName,
-    // });
-    // if (!department)
-    //   throw new EntityNotFoundException(ErrorCodes.DEPARTMENT_NOT_FOUND);
     const newEmployee = new Employee();
     newEmployee.name = name;
     newEmployee.email = email;
@@ -87,11 +79,6 @@ class EmployeeService {
     const employee = await this.employeeRepository.findOneBy({ id });
     if (!employee)
       throw new EntityNotFoundException(ErrorCodes.EMPLOYEE_WITH_ID_NOT_FOUND);
-    // const newDepartment = await this.departmentRepository.findOneBy({
-    //   name: departmentName,
-    // });
-    // if (!newDepartment)
-    //   throw new EntityNotFoundException(ErrorCodes.DEPARTMENT_NOT_FOUND);
 
     employee.name = name;
     employee.email = email;

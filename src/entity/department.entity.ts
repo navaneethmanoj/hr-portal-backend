@@ -4,7 +4,7 @@ import Employee from "./employee.entity";
 
 @Entity()
 class Department extends AbstractEntity {
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @OneToMany(() => Employee, (employee) => employee.department)
