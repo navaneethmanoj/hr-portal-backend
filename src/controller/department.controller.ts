@@ -3,6 +3,7 @@ import DepartmentService from "../service/department.service";
 import express, { Request, Response, NextFunction } from "express";
 import { ErrorCodes } from "../utils/error.code";
 import {
+  AddEmployeeToDepartmentDto,
   CreateDepartmentDto,
   UpdateDepartmentDto,
 } from "../dto/department.dto";
@@ -23,14 +24,22 @@ class DepartmentController {
     this.router.get("/:id", authorize, this.getDepartmentById);
     this.router.post("/", authorize, this.createDepartment);
     this.router.put("/:id", authorize, this.updateDepartment);
+    this.router.put(
+      "/:id/addEmployee",
+      authorize,
+      this.addEmployeeToDepartment
+    );
     this.router.delete("/:id", authorize, this.deleteDepartment);
   }
   public getAllDepartments = async (
-    req: Request,
+    req: RequestWithUser,
     res: Response,
     next: NextFunction
   ) => {
     try {
+      const role = req.role;
+      if (role !== Role.HR)
+        throw new UnauthorizedException(ErrorCodes.UNAUTHORIZED);
       const departments = await this.departmentService.getAllDepartments();
       res.status(200).send(departments);
     } catch (err) {
@@ -38,11 +47,14 @@ class DepartmentController {
     }
   };
   public getDepartmentById = async (
-    req: Request,
+    req: RequestWithUser,
     res: Response,
     next: NextFunction
   ) => {
     try {
+      const role = req.role;
+      if (role !== Role.HR)
+        throw new UnauthorizedException(ErrorCodes.UNAUTHORIZED);
       const department = await this.departmentService.getDepartmentById(
         Number(req.params.id)
       );
@@ -91,8 +103,33 @@ class DepartmentController {
       }
       const department = await this.departmentService.updateDepartment(
         Number(req.params.id),
-        departmentDto.name,
-        departmentDto.employeeId
+        departmentDto.name
+      );
+      res.status(200).json(department);
+    } catch (err) {
+      next(err);
+    }
+  };
+  public addEmployeeToDepartment = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const role = req.role;
+      if (role !== Role.HR)
+        throw new UnauthorizedException(ErrorCodes.UNAUTHORIZED);
+      const employeeToDepartmentDto = plainToInstance(
+        AddEmployeeToDepartmentDto,
+        req.body
+      );
+      const errors = await validate(employeeToDepartmentDto);
+      if (errors.length) {
+        throw new ValidationException(ErrorCodes.VALIDATION_ERROR, errors);
+      }
+      const department = await this.departmentService.addEmployeeToDepartment(
+        Number(req.params.id),
+        employeeToDepartmentDto.employeeId
       );
       res.status(200).json(department);
     } catch (err) {

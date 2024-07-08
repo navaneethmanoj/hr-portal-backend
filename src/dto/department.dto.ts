@@ -9,9 +9,10 @@ class UpdateDepartmentDto {
   @IsNotEmpty()
   @IsString()
   name: string;
-
+}
+class AddEmployeeToDepartmentDto {
   @IsNumber()
   employeeId: number;
 }
 
-export { CreateDepartmentDto, UpdateDepartmentDto };
+export { CreateDepartmentDto, UpdateDepartmentDto, AddEmployeeToDepartmentDto };

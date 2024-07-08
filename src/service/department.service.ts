@@ -22,12 +22,21 @@ class DepartmentService {
     newDepartment.employees = [];
     return this.departmentRepository.save(newDepartment);
   };
-  updateDepartment = async (
-    id: number,
-    name: string,
-    employeeId: number
-  ): Promise<Department> => {
+  updateDepartment = async (id: number, name: string): Promise<Department> => {
     const department = await this.departmentRepository.findOneBy({ id });
+    if (!department)
+      throw new EntityNotFoundException(ErrorCodes.DEPARTMENT_NOT_FOUND);
+
+    department.name = name;
+    return this.departmentRepository.save(department);
+  };
+  addEmployeeToDepartment = async (
+    departmentId: number,
+    employeeId: number
+  ) => {
+    const department = await this.departmentRepository.findOneBy({
+      id: departmentId,
+    });
     if (!department)
       throw new EntityNotFoundException(ErrorCodes.DEPARTMENT_NOT_FOUND);
     const employee = await this.employeeRepository.findOneBy({
@@ -35,7 +44,6 @@ class DepartmentService {
     });
     if (!employee)
       throw new EntityNotFoundException(ErrorCodes.EMPLOYEE_WITH_ID_NOT_FOUND);
-    department.name = name;
     department.employees.push(employee);
     return this.departmentRepository.save(department);
   };
