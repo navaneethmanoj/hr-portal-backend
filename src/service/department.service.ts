@@ -1,15 +1,20 @@
+import dataSource from "../db/data-source.db";
 import Department from "../entity/department.entity";
+import Employee from "../entity/employee.entity";
 import EntityNotFoundException from "../exceptions/entity-not-found.exception";
 import UnauthorizedException from "../exceptions/unauthorized.exception";
 import DepartmentRepository from "../repository/department.repository";
 import EmployeeRepository from "../repository/employee.repository";
 import { ErrorCodes } from "../utils/error.code";
+import EmployeeService from "./employee.service";
 
 class DepartmentService {
-  constructor(
-    private departmentRepository: DepartmentRepository,
-    private employeeRepository: EmployeeRepository
-  ) {}
+  private employeeService: EmployeeService;
+  constructor(private departmentRepository: DepartmentRepository) {
+    this.employeeService = new EmployeeService(
+      new EmployeeRepository(dataSource.getRepository(Employee))
+    );
+  }
   getAllDepartments = async (): Promise<Department[]> => {
     return this.departmentRepository.find();
   };
@@ -39,9 +44,10 @@ class DepartmentService {
     });
     if (!department)
       throw new EntityNotFoundException(ErrorCodes.DEPARTMENT_NOT_FOUND);
-    const employee = await this.employeeRepository.findOneBy({
-      id: employeeId,
-    });
+    // const employee = await this.employeeRepository.findOneBy({
+    //   id: employeeId,
+    // });
+    const employee = await this.employeeService.getEmployeeById(employeeId);
     if (!employee)
       throw new EntityNotFoundException(ErrorCodes.EMPLOYEE_WITH_ID_NOT_FOUND);
     department.employees.push(employee);

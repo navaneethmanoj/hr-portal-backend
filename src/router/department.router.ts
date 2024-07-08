@@ -8,8 +8,7 @@ import DepartmentService from "../service/department.service";
 
 const departmentController = new DepartmentController(
   new DepartmentService(
-    new DepartmentRepository(dataSource.getRepository(Department)),
-    new EmployeeRepository(dataSource.getRepository(Employee))
+    new DepartmentRepository(dataSource.getRepository(Department))
   )
 );
 
