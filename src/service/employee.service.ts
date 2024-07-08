@@ -1,17 +1,14 @@
 import bcrypt from "bcrypt";
 import jsonwebtoken from "jsonwebtoken";
-
 import Address from "../entity/address.entity";
 import Employee from "../entity/employee.entity";
 import EmployeeRepository from "../repository/employee.repository";
-import DepartmentRepository from "../repository/department.repository";
 import { Role } from "../utils/role.enum";
 import EntityNotFoundException from "../exceptions/entity-not-found.exception";
 import { jwtPayload } from "../utils/jwtPayload";
 import { JWT_SECRET, JWT_VALIDITY } from "../utils/constants";
 import IncorrectPasswordException from "../exceptions/incorrect-password.exception";
 import { ErrorCodes } from "../utils/error.code";
-import Department from "../entity/department.entity";
 import DepartmentService from "./department.service";
 
 class EmployeeService {

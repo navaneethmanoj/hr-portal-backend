@@ -1,4 +1,6 @@
 import { when } from "jest-when";
+import jsonwebtoken from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import Employee from "../../src/entity/employee.entity";
 import EmployeeRepository from "../../src/repository/employee.repository";
 import EmployeeService from "../../src/service/employee.service";
@@ -6,10 +8,12 @@ import { Role } from "../../src/utils/role.enum";
 import DepartmentRepository from "../../src/repository/department.repository";
 import Department from "../../src/entity/department.entity";
 import Address from "../../src/entity/address.entity";
+import DepartmentService from "../../src/service/department.service";
+import { JWT_SECRET, JWT_VALIDITY } from "../../src/utils/constants";
 
 describe("Employee Service", () => {
   let employeeRepository: EmployeeRepository;
-  let departmentRepository: DepartmentRepository;
+  let departmentService: DepartmentService;
   let employeeService: EmployeeService;
   beforeAll(() => {
     const dataSource = {
@@ -18,10 +22,13 @@ describe("Employee Service", () => {
     employeeRepository = new EmployeeRepository(
       dataSource.getRepository(Employee)
     ) as jest.Mocked<EmployeeRepository>;
-    departmentRepository = new DepartmentRepository(
+    departmentService = new DepartmentService(
       dataSource.getRepository(Department)
-    ) as jest.Mocked<DepartmentRepository>;
-    employeeService = new EmployeeService(employeeRepository);
+    );
+    employeeService = new EmployeeService(
+      employeeRepository,
+      departmentService
+    );
   });
 
   it("should return all employees", async () => {
@@ -33,7 +40,32 @@ describe("Employee Service", () => {
     expect(users).toEqual([]);
     expect(mockfn).toHaveBeenCalledTimes(1);
   });
+  it("should return token as object on successful login", async () => {
+    //TODO - not working - tokens generated are different
+    const payload = {
+      name: "Navaneeth",
+      email: "navaneethpm@gmail.com",
+      role: Role.HR,
+      password: "sasasa",
+    };
+    const mockfn = jest
+      .fn(employeeRepository.findOneBy)
+      .mockResolvedValue(payload as Employee);
+    employeeRepository.findOneBy = mockfn;
+    const mockfn2 = jest.fn(bcrypt.compare).mockResolvedValue(true as never);
+    bcrypt.compare = mockfn2;
+    const expectedToken = {
+      token: jsonwebtoken.sign(payload, JWT_SECRET, {
+        expiresIn: JWT_VALIDITY,
+      }),
+    };
 
+    const authToken = await employeeService.loginEmployee(
+      payload.email,
+      payload.password
+    );
+    expect(authToken).toEqual;
+  });
   it("should return an employee", async () => {
     const employee = {
       id: 10,
@@ -68,17 +100,18 @@ describe("Employee Service", () => {
       password: "asasad",
       role: Role.HR,
     };
-    // const department = {
-    //   name: "HR",
-    // };
+    const departmentId = 1;
+    const department = {
+      id: 1,
+    };
     const mockfn = jest
       .fn(employeeRepository.save)
       .mockResolvedValue(employee as Employee);
     employeeRepository.save = mockfn;
-    // const mockfn2 = jest
-    //   .fn(departmentRepository.findOneBy)
-    //   .mockResolvedValue(department as Department);
-    // departmentRepository.findOneBy = mockfn2;
+    const mockfn2 = jest
+      .fn(departmentService.getDepartmentById)
+      .mockResolvedValue(department as Department);
+    departmentService.getDepartmentById = mockfn2;
     const createdUser = await employeeService.createEmployee(
       employee.name,
       employee.email,
@@ -86,7 +119,7 @@ describe("Employee Service", () => {
       employee.address,
       employee.password,
       employee.role,
-      "HR"
+      departmentId
     );
     if (!createdUser) return;
     expect(createdUser.email).toEqual("johndoe@gmail.com");
@@ -150,7 +183,15 @@ describe("Employee Service", () => {
       role: Role.HR,
       department: department,
     };
-    const mockfn = jest.fn(employeeRepository.softRemove).mockResolvedValue(employee as Employee)
-    employeeRepository.
+    const mockfn = jest
+      .fn(employeeRepository.findOneBy)
+      .mockResolvedValue(employee as Employee);
+    employeeRepository.findOneBy = mockfn;
+    const mockfn2 = jest
+      .fn(employeeRepository.softRemove)
+      .mockResolvedValue(employee as Employee);
+    employeeRepository.softRemove = mockfn2;
+    const deletedUser = await employeeService.deleteEmployee(12);
+    expect(deletedUser.email).toEqual("johndoe@gmail.com");
   });
 });

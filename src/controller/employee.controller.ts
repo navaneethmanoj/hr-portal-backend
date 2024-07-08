@@ -141,9 +141,7 @@ class EmployeeController {
       if (role !== Role.HR) {
         throw new UnauthorizedException(ErrorCodes.UNAUTHORIZED);
       }
-      const deletedEmp = await this.employeeService.deleteEmployee(
-        Number(req.params.id)
-      );
+      await this.employeeService.deleteEmployee(Number(req.params.id));
       res.status(204).send("");
     } catch (err) {
       next(err);
