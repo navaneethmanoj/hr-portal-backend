@@ -1,13 +1,16 @@
-import { DataSource, Repository, UpdateResult } from "typeorm";
+import { Repository, UpdateResult } from "typeorm";
 import Employee from "../entity/employee.entity";
 
 class EmployeeRepository {
   constructor(private repository: Repository<Employee>) {}
   public find = async (): Promise<Employee[]> => {
-    return this.repository.find({ relations: ["address"] });
+    return this.repository.find({ relations: ["address", "department"] });
   };
   public findOneBy = async (filter: Partial<Employee>): Promise<Employee> => {
-    return this.repository.findOne({ where: filter, relations: ["address"] });
+    return this.repository.findOne({
+      where: filter,
+      relations: ["address", "department"],
+    });
   };
   public save = async (employee: Employee): Promise<Employee> => {
     return this.repository.save(employee);
@@ -18,9 +21,6 @@ class EmployeeRepository {
   public softRemove = async (employee: Employee) => {
     return this.repository.softRemove(employee);
   };
-  // public update = async(employee: Employee) => {
-  //   return this.repository.update()
-  // }
 }
 
 export default EmployeeRepository;

@@ -26,14 +26,14 @@ const errorMiddleware = (
 ) => {
   try {
     const message: string = error.message || "Something went wrong";
-    if (error instanceof HttpException) {
-      const status: number = error.status || 500;
-      let respbody = { message: message };
-      res.status(status).json(respbody);
-    } else if (error instanceof ValidationException) {
+    if (error instanceof ValidationException) {
       const status: number = error.status || 400;
       const errorMessages = formatValidationError(error.errors);
       let respbody = { message: message, errors: errorMessages };
+      res.status(status).json(respbody);
+    } else if (error instanceof HttpException) {
+      const status: number = error.status || 500;
+      let respbody = { message: message };
       res.status(status).json(respbody);
     } else {
       console.error(error.stack);

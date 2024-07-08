@@ -6,9 +6,21 @@ export const ErrorCodes: { [key: string]: CustomError } = {
     CODE: "EMPLOYEE_WITH_ID_NOT_FOUND",
     MESSAGE: "Employee with given id not found",
   },
+  DEPARTMENT_NOT_FOUND: {
+    CODE: "DEPARTMENT_NOT_FOUND",
+    MESSAGE: "Department not found",
+  },
+  DEPARTMENT_NOT_EMPTY: {
+    CODE: "DEPARTMENT_NOT_EMPTY",
+    MESSAGE: "Department not empty",
+  },
+  INVALID_CREDENTIALS: {
+    CODE: "INVALID_CREDENTIALS",
+    MESSAGE: "Invalid credentials",
+  },
   VALIDATION_ERROR: {
     CODE: "VALIDATION_ERROR",
-    MESSAGE: "Error while validation request body",
+    MESSAGE: "Error while validating request body",
   },
   INCORRECT_PASSWORD: {
     CODE: "INCORRECT_PASSWORD",

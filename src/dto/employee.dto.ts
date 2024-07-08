@@ -10,6 +10,8 @@ import { Type } from "class-transformer";
 import { CreateAddressDto, UpdateAddressDto } from "./address.dto";
 import "reflect-metadata";
 import { Role } from "../utils/role.enum";
+import { CreateDepartmentDto } from "./department.dto";
+import { DeclarationWithTypeParameters } from "typescript";
 
 export class CreateEmployeeDto {
   @IsNotEmpty()
@@ -36,6 +38,11 @@ export class CreateEmployeeDto {
   @ValidateNested({ each: true })
   @Type(() => CreateAddressDto)
   address: CreateAddressDto;
+
+  @IsNotEmpty()
+  @ValidateNested({ each: true })
+  @Type(() => CreateDepartmentDto)
+  department: CreateDepartmentDto;
 }
 
 export class UpdateEmployeeDto {
@@ -56,4 +63,9 @@ export class UpdateEmployeeDto {
   @ValidateNested({ each: true })
   @Type(() => UpdateAddressDto)
   address: UpdateAddressDto;
+
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => CreateDepartmentDto)
+  department: CreateDepartmentDto;
 }
