@@ -21,10 +21,7 @@ describe("Employee Service", () => {
     departmentRepository = new DepartmentRepository(
       dataSource.getRepository(Department)
     ) as jest.Mocked<DepartmentRepository>;
-    employeeService = new EmployeeService(
-      employeeRepository,
-      departmentRepository
-    );
+    employeeService = new EmployeeService(employeeRepository);
   });
 
   it("should return all employees", async () => {
@@ -71,17 +68,17 @@ describe("Employee Service", () => {
       password: "asasad",
       role: Role.HR,
     };
-    const department = {
-      name: "HR",
-    };
+    // const department = {
+    //   name: "HR",
+    // };
     const mockfn = jest
       .fn(employeeRepository.save)
       .mockResolvedValue(employee as Employee);
     employeeRepository.save = mockfn;
-    const mockfn2 = jest
-      .fn(departmentRepository.findOneBy)
-      .mockResolvedValue(department as Department);
-    departmentRepository.findOneBy = mockfn2;
+    // const mockfn2 = jest
+    //   .fn(departmentRepository.findOneBy)
+    //   .mockResolvedValue(department as Department);
+    // departmentRepository.findOneBy = mockfn2;
     const createdUser = await employeeService.createEmployee(
       employee.name,
       employee.email,
@@ -94,5 +91,66 @@ describe("Employee Service", () => {
     if (!createdUser) return;
     expect(createdUser.email).toEqual("johndoe@gmail.com");
   });
-  it("should update an employee");
+  it("should return updated employee", async () => {
+    let address = new Address();
+    address.line1 = "Thrissur";
+    address.pincode = "680631";
+    const department: Partial<Department> = {
+      name: "HR",
+    };
+    const employee: any = {
+      id: 12,
+      email: "johndoe@gmail.com",
+      name: "Jon Doe",
+      age: 24,
+      address: address,
+      password: "asasad",
+      role: Role.HR,
+      department: department,
+    };
+    const employee2 = {
+      ...employee,
+      id: 12,
+      name: "Jane Doe",
+    };
+    console.log(employee2);
+    const mockfn1 = jest
+      .fn(employeeRepository.findOneBy)
+      .mockResolvedValue(employee as Employee);
+    employeeRepository.findOneBy = mockfn1;
+    const mockfn2 = jest
+      .fn(employeeRepository.save)
+      .mockResolvedValue(employee2 as Employee);
+    employeeRepository.save = mockfn2;
+    const updatedUser = await employeeService.updateEmployee(
+      employee.id as number,
+      employee.name,
+      employee.email,
+      employee.age,
+      employee.address,
+      employee.role
+    );
+    if (!updatedUser) return null;
+    expect(updatedUser.name).toEqual("Jane Doe");
+  });
+  it("should return deleted employee", async () => {
+    let address = new Address();
+    address.line1 = "Thrissur";
+    address.pincode = "680631";
+    const department: Partial<Department> = {
+      name: "HR",
+    };
+    const employee: any = {
+      id: 12,
+      email: "johndoe@gmail.com",
+      name: "Jon Doe",
+      age: 24,
+      address: address,
+      password: "asasad",
+      role: Role.HR,
+      department: department,
+    };
+    const mockfn = jest.fn(employeeRepository.softRemove).mockResolvedValue(employee as Employee)
+    employeeRepository.
+  });
 });

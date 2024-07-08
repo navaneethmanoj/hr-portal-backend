@@ -24,11 +24,11 @@ class DepartmentController {
     this.router.get("/:id", authorize, this.getDepartmentById);
     this.router.post("/", authorize, this.createDepartment);
     this.router.put("/:id", authorize, this.updateDepartment);
-    this.router.put(
-      "/:id/addEmployee",
-      authorize,
-      this.addEmployeeToDepartment
-    );
+    // this.router.put(
+    //   "/:id/addEmployee",
+    //   authorize,
+    //   this.addEmployeeToDepartment
+    // );
     this.router.delete("/:id", authorize, this.deleteDepartment);
   }
   public getAllDepartments = async (
@@ -110,32 +110,32 @@ class DepartmentController {
       next(err);
     }
   };
-  public addEmployeeToDepartment = async (
-    req: RequestWithUser,
-    res: Response,
-    next: NextFunction
-  ) => {
-    try {
-      const role = req.role;
-      if (role !== Role.HR)
-        throw new UnauthorizedException(ErrorCodes.UNAUTHORIZED);
-      const employeeToDepartmentDto = plainToInstance(
-        AddEmployeeToDepartmentDto,
-        req.body
-      );
-      const errors = await validate(employeeToDepartmentDto);
-      if (errors.length) {
-        throw new ValidationException(ErrorCodes.VALIDATION_ERROR, errors);
-      }
-      const department = await this.departmentService.addEmployeeToDepartment(
-        Number(req.params.id),
-        employeeToDepartmentDto.employeeId
-      );
-      res.status(200).json(department);
-    } catch (err) {
-      next(err);
-    }
-  };
+  // public addEmployeeToDepartment = async (
+  //   req: RequestWithUser,
+  //   res: Response,
+  //   next: NextFunction
+  // ) => {
+  //   try {
+  //     const role = req.role;
+  //     if (role !== Role.HR)
+  //       throw new UnauthorizedException(ErrorCodes.UNAUTHORIZED);
+  //     const employeeToDepartmentDto = plainToInstance(
+  //       AddEmployeeToDepartmentDto,
+  //       req.body
+  //     );
+  //     const errors = await validate(employeeToDepartmentDto);
+  //     if (errors.length) {
+  //       throw new ValidationException(ErrorCodes.VALIDATION_ERROR, errors);
+  //     }
+  //     const department = await this.departmentService.addEmployeeToDepartment(
+  //       Number(req.params.id),
+  //       employeeToDepartmentDto.employeeId
+  //     );
+  //     res.status(200).json(department);
+  //   } catch (err) {
+  //     next(err);
+  //   }
+  // };
   public deleteDepartment = async (
     req: RequestWithUser,
     res: Response,

@@ -94,7 +94,7 @@ class EmployeeController {
         employeeDto.address,
         employeeDto.password,
         employeeDto.role,
-        employeeDto.department.name
+        employeeDto.departmentId
       );
       res.status(201).send(newEmployee);
     } catch (err) {
@@ -123,7 +123,7 @@ class EmployeeController {
         employeeDto.email,
         employeeDto.age,
         employeeDto.address,
-        employeeDto.department.name
+        employeeDto.departmentId
       );
       res.status(200).send(updatedEmployee);
     } catch (err) {
@@ -141,7 +141,9 @@ class EmployeeController {
       if (role !== Role.HR) {
         throw new UnauthorizedException(ErrorCodes.UNAUTHORIZED);
       }
-      await this.employeeService.deleteEmployee(Number(req.params.id));
+      const deletedEmp = await this.employeeService.deleteEmployee(
+        Number(req.params.id)
+      );
       res.status(204).send("");
     } catch (err) {
       next(err);

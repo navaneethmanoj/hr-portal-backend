@@ -12,9 +12,13 @@ import { JWT_SECRET, JWT_VALIDITY } from "../utils/constants";
 import IncorrectPasswordException from "../exceptions/incorrect-password.exception";
 import { ErrorCodes } from "../utils/error.code";
 import Department from "../entity/department.entity";
+import DepartmentService from "./department.service";
 
 class EmployeeService {
-  constructor(private employeeRepository: EmployeeRepository) {}
+  constructor(
+    private employeeRepository: EmployeeRepository,
+    private departmentService: DepartmentService
+  ) {}
   loginEmployee = async (email: string, password: string) => {
     const employee = await this.employeeRepository.findOneBy({ email });
     if (!employee) {
@@ -48,8 +52,13 @@ class EmployeeService {
     address: any,
     password: string,
     role: Role,
-    departmentName: string
+    departmentId: number
   ): Promise<Employee> => {
+    const department = await this.departmentService.getDepartmentById(
+      departmentId
+    );
+    if (!department)
+      throw new EntityNotFoundException(ErrorCodes.DEPARTMENT_NOT_FOUND);
     const newEmployee = new Employee();
     newEmployee.name = name;
     newEmployee.email = email;
@@ -62,8 +71,6 @@ class EmployeeService {
     newAddress.pincode = address.pincode;
     newEmployee.address = newAddress;
 
-    const department = new Department();
-    department.name = departmentName;
     newEmployee.department = department;
     return this.employeeRepository.save(newEmployee);
   };
@@ -74,19 +81,23 @@ class EmployeeService {
     email: string,
     age: number,
     address: any,
-    departmentName: string
+    departmentId: number
   ): Promise<Employee | null> => {
     const employee = await this.employeeRepository.findOneBy({ id });
     if (!employee)
       throw new EntityNotFoundException(ErrorCodes.EMPLOYEE_WITH_ID_NOT_FOUND);
-
+    const newDepartment = await this.departmentService.getDepartmentById(
+      departmentId
+    );
+    if (!newDepartment)
+      throw new EntityNotFoundException(ErrorCodes.DEPARTMENT_NOT_FOUND);
     employee.name = name;
     employee.email = email;
     employee.age = age;
     employee.address.line1 = address.line1;
     employee.address.pincode = address.pincode;
 
-    employee.department.name = departmentName;
+    employee.department.name = newDepartment.name;
     return this.employeeRepository.save(employee);
   };
   deleteEmployee = async (id: number) => {

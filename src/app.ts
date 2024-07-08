@@ -5,7 +5,7 @@ import loggerMiddleware from "./middleware/logger.middleware";
 import bodyParser from "body-parser";
 import dataSource from "./db/data-source.db";
 import errorMiddleware from "./middleware/error.middleware";
-import departmentRouter from "./router/department.router";
+import departmentRouter from "./router/department.routes";
 
 const app = express();
 
