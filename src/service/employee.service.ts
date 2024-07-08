@@ -70,7 +70,6 @@ class EmployeeService {
     newAddress.pincode = address.pincode;
     newEmployee.address = newAddress;
 
-    await this.departmentRepository.save(department);
     return this.employeeRepository.save(newEmployee);
   };
 
