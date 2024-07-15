@@ -41,12 +41,10 @@ describe("Employee Service", () => {
     expect(mockfn).toHaveBeenCalledTimes(1);
   });
   it("should return token as object on successful login", async () => {
-    //TODO - not working - tokens generated are different
     const payload = {
       name: "Navaneeth",
       email: "navaneethpm@gmail.com",
       role: Role.HR,
-      password: "sasasa",
     };
     const mockfn = jest
       .fn(employeeRepository.findOneBy)
@@ -62,9 +60,9 @@ describe("Employee Service", () => {
 
     const authToken = await employeeService.loginEmployee(
       payload.email,
-      payload.password
+      "asasasasa"
     );
-    expect(authToken).toEqual;
+    expect(authToken).toEqual(expectedToken);
   });
   it("should return an employee", async () => {
     const employee = {
